@@ -21,12 +21,12 @@
 
 
 module testbench();
-// ²ÎÊı¶¨Òå
+// å‚æ•°å®šä¹‰
 parameter DATA_WD = 32;
 parameter DATA_BYTE_WD = DATA_WD / 8;
 parameter BYTE_CNT_WD = $clog2(DATA_BYTE_WD);
 
-// Ê±ÖÓºÍ¸´Î»ĞÅºÅ
+// æ—¶é’Ÿå’Œå¤ä½ä¿¡å·
 reg                         clk             ;
 reg                         rst_n           ;
 
@@ -49,25 +49,25 @@ reg  [BYTE_CNT_WD : 0]      byte_insert_cnt;
 wire                        ready_insert   ;
 
 
-// ÊµÀı»¯
+// å®ä¾‹åŒ–
 axi_stream_insert_header #(
     .DATA_WD(DATA_WD)
     ) tb (
     .clk                (clk            ),
     .rst_n              (rst_n          ),
-    // Êı¾İÊäÈë½Ó¿Ú
+    // æ•°æ®è¾“å…¥æ¥å£
     .valid_in           (valid_in       ),
     .data_in            (data_in        ),
     .keep_in            (keep_in        ),
     .last_in            (last_in        ),
     .ready_in           (ready_in       ),
-    // Êä³ö½Ó¿Ú
+    // è¾“å‡ºæ¥å£
     .valid_out          (valid_out      ),
     .data_out           (data_out       ),
     .keep_out           (keep_out       ),
     .last_out           (last_out       ),
     .ready_out          (ready_out      ),
-    // HeaderÊäÈë½Ó¿Ú
+    // Headerè¾“å…¥æ¥å£
     .valid_insert       (valid_insert   ),
     .data_insert        (data_insert    ),
     .keep_insert        (keep_insert    ),
@@ -75,7 +75,7 @@ axi_stream_insert_header #(
     .ready_insert       (ready_insert   )
 );
 
-// ³õÊ¼»¯Ê±ÖÓºÍ¸´Î»
+// åˆå§‹åŒ–æ—¶é’Ÿå’Œå¤ä½
 initial begin
     clk = 0;
     forever #5 clk = ~clk;
@@ -99,42 +99,41 @@ initial begin
 end
 wire in_control = ready_in && rst_n;
 wire insert_control = ready_insert && rst_n;
-// ÆäËûÑéÖ¤´úÂë£¨¼¤ÀøÉú³É¡¢¼à¿Ø¡¢¶ÏÑÔµÈ£©
-// ...
-// Êı¾İÁ÷Éú³É
+
+// æ•°æ®æµç”Ÿæˆ
 task generate_data_stream();
     while (1) begin
         @(posedge clk);
         if (rst_n) begin
 
-            valid_in = $random % 2;          // Ëæ»úvalidĞÅºÅ
-            data_in  = $urandom();           // Ëæ»úÊı¾İ
-            last_in  = valid_in? ($random % 10 == 0) : 0;  // 10%¸ÅÂÊÎª×îºóÒ»ÅÄ
+            valid_in = $random % 2;          // éšæœºvalidä¿¡å·
+            data_in  = $urandom();           // éšæœºæ•°æ®
+            last_in  = valid_in? ($random % 10 == 0) : 0;  // 10%æ¦‚ç‡ä¸ºæœ€åä¸€æ‹
 
-            keep_in  = (!last_in) ? {DATA_BYTE_WD{1'b1}} : // ·Ç×îºóÒ»ÅÄÈ«ÓĞĞ§
-                       (4'b1111 << $urandom_range(0, 3));        // ×îºóÒ»ÅÄËæ»ú²¿·ÖÓĞĞ§
+            keep_in  = (!last_in) ? {DATA_BYTE_WD{1'b1}} : // éæœ€åä¸€æ‹å…¨æœ‰æ•ˆ
+                       (4'b1111 << $urandom_range(0, 3));        // æœ€åä¸€æ‹éšæœºéƒ¨åˆ†æœ‰æ•ˆ
         end
     end
 endtask
 
-// HeaderÉú³É
+// Headerç”Ÿæˆ
 task generate_header();
     while (1) begin
         @(posedge clk);begin
                 valid_insert = $random % 2;
                 data_insert  = $urandom();
-                // Éú³ÉÁ¬ĞøµÄkeep_insert£¨Èç4'b0011£©
+                // ç”Ÿæˆè¿ç»­çš„keep_insertï¼ˆå¦‚4'b0011ï¼‰
                 keep_insert = (4'b1111 >>  $urandom_range(0, 3));
                 byte_insert_cnt = keep_insert[0] + keep_insert[1] + keep_insert[2] +keep_insert[3];
         end
     end
 endtask
 
-// ÏÂÓÎ·´Ñ¹Éú³É
+
 task generate_backpressure();
     while (1) begin
         @(posedge clk);
-        ready_out = 1;  // Ëæ»ú·´Ñ¹
+        ready_out = 1; 
     end
 endtask
 endmodule
